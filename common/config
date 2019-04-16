@@ -74,7 +74,7 @@ export PWD=`pwd`
 export MALLOCLIB=${MALLOCLIB:=/usr/lib/libefence.a}
 export LOCAL_CONFIGURE_OPTIONS=${LOCAL_CONFIGURE_OPTIONS:=--enable-readline=yes}
 
-export RECREATE_TEST_DEV=false
+export RECREATE_TEST_DEV=true
 
 # Handle mkfs.$fstyp which does (or does not) require -f to overwrite
 set_mkfs_prog_path_with_opts()
@@ -223,6 +223,7 @@ case "$HOSTOS" in
     Linux)
 	export MKFS_XFS_PROG=$(type -P mkfs.xfs)
 	export MKFS_EXT4_PROG=$(type -P mkfs.ext4)
+	#export MKFS_PAPYROS_PROG=$(type -P mkfs.papyros)
 	export MKFS_UDF_PROG=$(type -P mkudffs)
 	export MKFS_BTRFS_PROG=$(set_mkfs_prog_path_with_opts btrfs)
 	export MKFS_F2FS_PROG=$(set_mkfs_prog_path_with_opts f2fs)
@@ -293,6 +294,9 @@ _mount_opts()
 	glusterfs)
 		export MOUNT_OPTIONS=$GLUSTERFS_MOUNT_OPTIONS
 		;;
+	papyros)
+		export MOUNT_OPTIONS=$PAPYROS_MOUNT_OPTIONS
+		;;
 	overlay)
 		export MOUNT_OPTIONS=$OVERLAY_MOUNT_OPTIONS
 		;;
@@ -344,6 +348,9 @@ _test_mount_opts()
 		;;
 	glusterfs)
 		export TEST_FS_MOUNT_OPTS=$GLUSTERFS_MOUNT_OPTIONS
+		;;
+	papyros)
+		export TEST_FS_MOUNT_OPTS=$PAPYROS_MOUNT_OPTIONS
 		;;
 	ext2|ext3|ext4|ext4dev)
 		# acls & xattrs aren't turned on by default on older ext$FOO
@@ -472,6 +479,11 @@ _check_device()
 	overlay)
 		if [ ! -d "$dev" ]; then
 			_fatal "common/config: $name ($dev) is not a directory for overlay"
+		fi
+		;;
+	papyros)
+		if [ ! -d "$dev" ]; then
+			_fatal "common/config: $name ($dev) is not a directory for papyros"
 		fi
 		;;
 	ubifs)

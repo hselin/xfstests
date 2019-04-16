@@ -4,6 +4,9 @@
 #
 # Control script for QA
 #
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+set -x
+
 tmp=/tmp/$$
 status=0
 needwrap=true
@@ -54,6 +57,7 @@ usage()
 check options
     -nfs                test NFS
     -glusterfs                test GlusterFS
+    -papyros            test papyros
     -cifs               test CIFS
     -9p			test 9p
     -overlay		test overlay
@@ -262,6 +266,7 @@ while [ $# -gt 0 ]; do
 
 	-nfs)		FSTYP=nfs ;;
 	-glusterfs)	FSTYP=glusterfs ;;
+	-papyros)	FSTYP=papyros ;;
 	-cifs)		FSTYP=cifs ;;
 	-9p)		FSTYP=9p ;;
 	-overlay)	FSTYP=overlay; export OVERLAY=true ;;
@@ -554,6 +559,7 @@ for section in $HOST_OPTIONS_SECTIONS; do
 	fi
 
 	sect_start=`_wallclock`
+	echo $RECREATE_TEST_DEV
 	if $RECREATE_TEST_DEV || [ "$OLD_FSTYP" != "$FSTYP" ]; then
 		echo "RECREATING    -- $FSTYP on $TEST_DEV"
 		_test_unmount 2> /dev/null

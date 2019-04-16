@@ -147,6 +147,10 @@ case "$FSTYP" in
 	 ;;
     glusterfs)
 	 ;;
+    papyros)
+	 #[ "$MKFS_PAPYROS_PROG" = "" ] && _fatal "mkfs.papyros not found"
+	 . ./common/papyros
+	 ;;
     overlay)
 	 . ./common/overlay
 	 ;;
@@ -327,6 +331,9 @@ _try_scratch_mount()
 	if [ "$FSTYP" == "overlay" ]; then
 		_overlay_scratch_mount $*
 		return $?
+	elif [ "$FSTYP" == "papyros" ]; then
+		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $*
+		return $?
 	fi
 	_mount -t $FSTYP `_scratch_mount_options $*`
 }
@@ -343,6 +350,9 @@ _scratch_unmount()
 	overlay)
 		_overlay_scratch_unmount
 		;;
+	papyros)
+		$UMOUNT_PROG $SCRATCH_MNT
+		;;
 	btrfs)
 		$UMOUNT_PROG $SCRATCH_MNT
 		;;
@@ -357,6 +367,10 @@ _scratch_remount()
     local opts="$1"
 
     if test -n "$opts"; then
+	if [ "$FSTYP" == "papyros"]; then
+		_papyros_remount $SCRATCH_DEV $SCRATCH_MNT $opts
+		return $?
+	fi
 	mount -o "remount,$opts" $SCRATCH_MNT
     fi
 }
@@ -399,14 +413,22 @@ _test_mount()
         _overlay_test_mount $*
         return $?
     fi
+    if [ "$FSTYP" == "papyros" ]; then
+        _papyros_mount $TEST_DEV $TEST_DIR $*
+        return $?
+    fi
     _test_options mount
     _mount -t $FSTYP $TEST_OPTIONS $TEST_FS_MOUNT_OPTS $SELINUX_MOUNT_OPTIONS $* $TEST_DEV $TEST_DIR
 }
 
 _test_unmount()
 {
+	echo "UNMOUNT!!!!!!!!!!!!!!!!!"
+
 	if [ "$FSTYP" == "overlay" ]; then
 		_overlay_test_unmount
+	elif [ "$FSTYP" == "papyros" ]; then
+		$UMOUNT_PROG $TEST_DIR
 	else
 		$UMOUNT_PROG $TEST_DEV
 	fi
@@ -613,6 +635,9 @@ _test_mkfs()
     ext2|ext3|ext4)
 	$MKFS_PROG -t $FSTYP -- -F $MKFS_OPTIONS $* $TEST_DEV
 	;;
+    papyros)
+	_mkfs_papyros $TEST_DEV $TEST_SPARE_DEV $TEST_MD_DIR
+	;;
     *)
 	yes | $MKFS_PROG -t $FSTYP -- $MKFS_OPTIONS $* $TEST_DEV
 	;;
@@ -698,6 +723,10 @@ _scratch_mkfs()
 		# $SCRATCH_MNT to avoid EEXIST caused by the leftover files
 		# created in previous runs
 		_scratch_cleanup_files
+		return $?
+		;;
+	papyros)
+		_mkfs_papyros $SCRATCH_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR
 		return $?
 		;;
 	tmpfs)
@@ -1417,6 +1446,11 @@ _check_mounted_on()
 	local mnt=$4
 	local type=$5
 
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_is_mounted $mnt
+		return $?
+	fi
+
 	# find $dev as the source, and print result in "$dev $mnt" format
 	local mount_rec=`findmnt -rncv -S $dev -o SOURCE,TARGET`
 	[ -n "$mount_rec" ] || return 1 # 1 = not mounted
@@ -1445,6 +1479,15 @@ _require_scratch_nocheck()
 {
     case "$FSTYP" in
 	glusterfs)
+		echo $SCRATCH_DEV | egrep -q ":/?" > /dev/null 2>&1
+		if [ -z "$SCRATCH_DEV" -o "$?" != "0" ]; then
+			_notrun "this test requires a valid \$SCRATCH_DEV"
+		fi
+		if [ ! -d "$SCRATCH_MNT" ]; then
+			_notrun "this test requires a valid \$SCRATCH_MNT"
+		fi
+		;;
+	papyros)
 		echo $SCRATCH_DEV | egrep -q ":/?" > /dev/null 2>&1
 		if [ -z "$SCRATCH_DEV" -o "$?" != "0" ]; then
 			_notrun "this test requires a valid \$SCRATCH_DEV"
@@ -1569,6 +1612,15 @@ _require_test()
 {
     case "$FSTYP" in
 	glusterfs)
+		echo $TEST_DEV | egrep -q ":/?" > /dev/null 2>&1
+		if [ -z "$TEST_DEV" -o "$?" != "0" ]; then
+			_notrun "this test requires a valid \$TEST_DEV"
+		fi
+		if [ ! -d "$TEST_DIR" ]; then
+			_notrun "this test requires a valid \$TEST_DIR"
+		fi
+		;;
+	papyros)
 		echo $TEST_DEV | egrep -q ":/?" > /dev/null 2>&1
 		if [ -z "$TEST_DEV" -o "$?" != "0" ]; then
 			_notrun "this test requires a valid \$TEST_DEV"
@@ -2654,6 +2706,9 @@ _check_test_fs()
     glusterfs)
 	# no way to check consistency for GlusterFS
 	;;
+	papyros)
+	_check_papyros_filesystem $TEST_DEV
+	;;
     overlay)
 	_check_overlay_test_fs
 	;;
@@ -2711,6 +2766,9 @@ _check_scratch_fs()
 	;;
     glusterfs)
 	# no way to check consistency for GlusterFS
+	;;
+	papyros)
+	_check_papyros_filesystem $device
 	;;
     overlay)
 	_check_overlay_scratch_fs
@@ -3628,18 +3686,26 @@ init_rc()
 		exit 1
 	fi
 
-	# if $TEST_DEV is not mounted, mount it now as XFS
-	if [ -z "`_fs_type $TEST_DEV`" ]
-	then
-		# $TEST_DEV is not mounted
-		if ! _test_mount
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_is_mounted $TEST_DIR
+		if [ $? -ne 0 ]
 		then
-			echo "common/rc: retrying test device mount with external set"
-			[ "$USE_EXTERNAL" != "yes" ] && export USE_EXTERNAL=yes
+			_test_mount || exit 1
+		fi
+	else
+		# if $TEST_DEV is not mounted, mount it now as XFS
+		if [ -z "`_fs_type $TEST_DEV`" ]
+		then
+			# $TEST_DEV is not mounted
 			if ! _test_mount
 			then
-				echo "common/rc: could not mount $TEST_DEV on $TEST_DIR"
-				exit 1
+				echo "common/rc: retrying test device mount with external set"
+				[ "$USE_EXTERNAL" != "yes" ] && export USE_EXTERNAL=yes
+				if ! _test_mount
+				then
+					echo "common/rc: could not mount $TEST_DEV on $TEST_DIR"
+					exit 1
+				fi
 			fi
 		fi
 	fi
