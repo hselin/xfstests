@@ -1,0 +1,62 @@
+# papyros 
+
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#set -x
+
+
+_papyros_mount()
+{
+	local device=$1
+	local mnt_directory=$2
+
+	# $3 ... -o
+	# $4 ... remount,ro / nosuid / etc
+
+	if [[ "$4" == *"remount"* ]]; then
+		fusermount -u $mnt_directory
+	fi
+
+	md_directory=$MD_VOL$device
+
+	$HERACLES_PATH/heracles $md_directory $mnt_directory -o allow_other,clone_fd,exec,nosuid
+}
+
+_papyros_remount()
+{
+	local device=$1
+	local mnt_directory=$2
+
+	fusermount -u $mnt_directory
+
+	md_directory=$MD_VOL$device
+	$HERACLES_PATH/heracles $md_directory $mnt_directory -o allow_other,clone_fd,exec,nosuid
+}
+
+_check_papyros_filesystem()
+{
+	local directory=$1
+}
+
+_mkfs_papyros()
+{
+	local device=$1
+	local spare_device=$2
+	md_directory=$3
+
+	rm -rf $md_directory
+	$HERACLES_PATH/mkfs.heracles $md_directory $device,$spare_device 1 1
+}
+
+_papyros_is_mounted()
+{
+	local mnt_directory=$1
+
+	local mount_rec=`findmnt -rncv $mnt_directory -o TARGET,FSTYPE`
+	[ -n "$mount_rec" ] || return 1 # 1 = not mounted
+
+	if [ "$mount_rec" != "$mnt_directory fuse.heracles" ]; then
+		return 2 # 2 = mounted on wrong mnt
+	fi
+
+	return 0 # 0 = mounted as expected
+}
