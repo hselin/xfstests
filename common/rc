@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: GPL-2.0+
 # Copyright (c) 2000-2006 Silicon Graphics, Inc.  All Rights Reserved.
 
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#set -x
+
 . common/config
 
 BC=$(which bc 2> /dev/null) || BC=
@@ -1560,6 +1563,8 @@ _check_mounted_on()
 # finishes the test with the filesystem in a corrupt state
 _require_scratch_nocheck()
 {
+	set -x
+
     case "$FSTYP" in
 	glusterfs)
 		echo $SCRATCH_DEV | egrep -q ":/?" > /dev/null 2>&1
@@ -1571,8 +1576,7 @@ _require_scratch_nocheck()
 		fi
 		;;
 	papyros)
-		echo $SCRATCH_DEV | egrep -q ":/?" > /dev/null 2>&1
-		if [ -z "$SCRATCH_DEV" -o "$?" != "0" ]; then
+		if [ -z "$SCRATCH_DEV" ]; then
 			_notrun "this test requires a valid \$SCRATCH_DEV"
 		fi
 		if [ ! -d "$SCRATCH_MNT" ]; then
@@ -1736,8 +1740,7 @@ _require_test()
 		fi
 		;;
 	papyros)
-		echo $TEST_DEV | egrep -q ":/?" > /dev/null 2>&1
-		if [ -z "$TEST_DEV" -o "$?" != "0" ]; then
+		if [ -z "$TEST_DEV" ]; then
 			_notrun "this test requires a valid \$TEST_DEV"
 		fi
 		if [ ! -d "$TEST_DIR" ]; then
