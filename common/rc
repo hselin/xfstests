@@ -479,7 +479,7 @@ _test_mount()
 
 _test_unmount()
 {
-	echo "UNMOUNT!!!!!!!!!!!!!!!!!"
+	echo "UNMOUNT "$TEST_DIR"!!!!!"
 
 	if [ "$FSTYP" == "overlay" ]; then
 		_overlay_test_unmount

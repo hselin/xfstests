@@ -38,9 +38,11 @@ umount $SCRATCH_MNT
 mkdir -p $TEST_DIR $SCRATCH_MNT $MD_VOL$TEST_DEV $MD_VOL$SCRATCH_DEV
 
 
-#source ./common/papyros
-#LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $TEST_DEV $TEST_SPARE_DEV $TEST_MD_DIR
+source ./common/papyros
+LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $TEST_DEV $TEST_SPARE_DEV $TEST_MD_DIR
+LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $SCRATCH_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR
 
 
 #LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check $*
-LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check -b -g quick
+#LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check -b -g quick
+LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check generic/002
