@@ -17,11 +17,13 @@ export MD_VOL=/md-vol
 
 export FSTYP=papyros
 export TEST_DEV=/dev/loop0
+#export TEST_DEV=/dev/sda
 export TEST_SPARE_DEV=/dev/loop1
 export TEST_DIR=/mnt/xfstests/test_dir
 export TEST_MD_DIR=$MD_VOL$TEST_DEV
 
 export SCRATCH_DEV=/dev/loop2
+#export SCRATCH_DEV=/dev/sdb
 export SCRATCH_SPARE_DEV=/dev/loop3
 export SCRATCH_MNT=/mnt/xfstests/scratch_dir
 export SCRATCH_MD_DIR=$MD_VOL$SCRATCH_DEV
@@ -42,7 +44,10 @@ source ./common/papyros
 LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $TEST_DEV $TEST_SPARE_DEV $TEST_MD_DIR
 LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $SCRATCH_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR
 
+#LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH _papyros_mount $SCRATCH_DEV $SCRATCH_MNT
+#exit
+
 
 #LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check $*
 #LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check -b -g quick
-LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check generic/002
+LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH ./check generic/034

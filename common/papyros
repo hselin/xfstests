@@ -8,28 +8,56 @@ _papyros_mount()
 {
 	local device=$1
 	local mnt_directory=$2
+	local md_directory=$3
+	local opts=$5
 
-	# $3 ... -o
-	# $4 ... remount,ro / nosuid / etc
+	local opt_str="allow_other,clone_fd,exec,nosuid"
 
-	if [[ "$4" == *"remount"* ]]; then
-		fusermount -u $mnt_directory
+	# $4 ... -o
+	# $5 ... remount,ro / nosuid / etc
+
+	#if [[ "$4" == *"remount"* ]]; then
+		#fusermount -u $mnt_directory
+	#fi
+
+
+	if [[ $opts == *"noatime"* ]]; then
+		opt_str+=",noatime"
 	fi
 
-	md_directory=$MD_VOL$device
+	if [[ $opts == *"strictatime"* ]]; then
+		opt_str+=",strictatime"
+	fi
 
-	$HERACLES_PATH/heracles $md_directory $mnt_directory -o allow_other,clone_fd,exec,nosuid
+	if [[ $opts == *"ro"* ]]; then
+		opt_str+=",ro"
+	fi
+
+	#echo $opt_str
+
+	$HERACLES_PATH/heracles $md_directory daemon $mnt_directory -f -o $opt_str
+
+	sleep 1
+
+	return 0
 }
 
 _papyros_remount()
 {
 	local device=$1
 	local mnt_directory=$2
+	local md_directory=$3
 
 	fusermount -u $mnt_directory
 
-	md_directory=$MD_VOL$device
-	$HERACLES_PATH/heracles $md_directory $mnt_directory -o allow_other,clone_fd,exec,nosuid
+	$HERACLES_PATH/heracles $md_directory $mnt_directory -f -o allow_other,clone_fd,exec,nosuid
+}
+
+_papyros_unmount()
+{
+	local mnt_directory=$1
+	umount $mnt_directory
+	sleep 5
 }
 
 _check_papyros_filesystem()
@@ -41,7 +69,7 @@ _mkfs_papyros()
 {
 	local device=$1
 	local spare_device=$2
-	md_directory=$3
+	local md_directory=$3
 
 	rm -rf $md_directory
 	$HERACLES_PATH/mkfs.heracles $md_directory $device,$spare_device 1 1
@@ -59,4 +87,13 @@ _papyros_is_mounted()
 	fi
 
 	return 0 # 0 = mounted as expected
+}
+
+_papyros_replace_device()
+{
+	local md_directory=$1
+	local from_device_path=$2
+	local to_device_path=$3
+
+	$HERACLES_PATH/replace_device $md_directory $from_device_path $to_device_path > /dev/null 2>&1
 }
