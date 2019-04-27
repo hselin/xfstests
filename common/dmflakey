@@ -21,12 +21,23 @@ _init_flakey()
 
 _mount_flakey()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_replace_device $SCRATCH_MD_DIR $SCRATCH_DEV $FLAKEY_DEV
+		_papyros_mount $FLAKEY_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $MOUNT_OPTIONS
+		return $?
+	fi
+
 	_scratch_options mount
 	mount -t $FSTYP $SCRATCH_OPTIONS $MOUNT_OPTIONS $FLAKEY_DEV $SCRATCH_MNT
 }
 
 _unmount_flakey()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_unmount $SCRATCH_MNT
+		return $?
+	fi
+
 	$UMOUNT_PROG $SCRATCH_MNT
 }
 
@@ -37,6 +48,7 @@ _cleanup_flakey()
 	$DMSETUP_PROG resume flakey-test > /dev/null 2>&1
 	$UMOUNT_PROG $SCRATCH_MNT > /dev/null 2>&1
 	_dmsetup_remove flakey-test
+	_papyros_replace_device $SCRATCH_MD_DIR $FLAKEY_DEV $SCRATCH_DEV
 }
 
 # _load_flakey_table <table> [lockfs]

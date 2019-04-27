@@ -244,7 +244,7 @@ create_entries(
 
 	for (i = 0; i < nfiles; i++) {
 		sprintf(buf, "XXXXXXXXXXXX.%d", i);
-		switch (i % 4) {
+		switch (i % 3) {
 		case 0:
 			/*
 			 * Create a file
