@@ -340,7 +340,7 @@ _try_scratch_mount()
 		_overlay_scratch_mount $*
 		return $?
 	elif [ "$FSTYP" == "papyros" ]; then
-		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $*
+		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $*
 		return $?
 	fi
 	_mount -t $FSTYP `_scratch_mount_options $*`
@@ -384,12 +384,14 @@ _scratch_mount_idmapped()
 
 _scratch_unmount()
 {
+	#echo "UNMOUNT "$SCRATCH_MNT"!!!!!"
+
 	case "$FSTYP" in
 	overlay)
 		_overlay_scratch_unmount
 		;;
 	papyros)
-		$UMOUNT_PROG $SCRATCH_MNT
+		_papyros_unmount $SCRATCH_MNT
 		;;
 	btrfs)
 		$UMOUNT_PROG $SCRATCH_MNT
@@ -411,7 +413,7 @@ _scratch_remount()
 
     if test -n "$opts"; then
 	if [ "$FSTYP" == "papyros"]; then
-		_papyros_remount $SCRATCH_DEV $SCRATCH_MNT $opts
+		_papyros_remount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $opts
 		return $?
 	else
 		_try_scratch_mount "-o remount,$opts"
@@ -470,7 +472,7 @@ _test_mount()
         return $?
     fi
     if [ "$FSTYP" == "papyros" ]; then
-        _papyros_mount $TEST_DEV $TEST_DIR $*
+        _papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $*
         return $?
     fi
     _test_options mount
@@ -479,12 +481,12 @@ _test_mount()
 
 _test_unmount()
 {
-	echo "UNMOUNT "$TEST_DIR"!!!!!"
+	#echo "UNMOUNT "$TEST_DIR"!!!!!"
 
 	if [ "$FSTYP" == "overlay" ]; then
 		_overlay_test_unmount
 	elif [ "$FSTYP" == "papyros" ]; then
-		$UMOUNT_PROG $TEST_DIR
+		_papyros_unmount $TEST_DIR
 	else
 		$UMOUNT_PROG $TEST_DEV
 	fi
@@ -1563,8 +1565,6 @@ _check_mounted_on()
 # finishes the test with the filesystem in a corrupt state
 _require_scratch_nocheck()
 {
-	set -x
-
     case "$FSTYP" in
 	glusterfs)
 		echo $SCRATCH_DEV | egrep -q ":/?" > /dev/null 2>&1
