@@ -36,7 +36,7 @@ _require_sparse_files
 _require_odirect
 
 _scratch_mkfs >/dev/null 2>&1
-_scratch_mount
+_scratch_mount -o 0readbuffer
 
 echo "End-of-file zeroing with direct I/O"
 $XFS_IO_PROG -f -d -t -c "pwrite -S 0x63 0 65536" \

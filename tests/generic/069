@@ -6,6 +6,10 @@
 #
 # Test out writes with O_APPEND flag sets.
 #
+
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#set -x
+
 seq=`basename $0`
 seqres=$RESULT_DIR/$seq
 echo "QA output created by $seq"
@@ -31,7 +35,7 @@ echo "*** mkfs"
 _scratch_mkfs >/dev/null 2>&1 || _fail "mkfs failed"
 
 echo "*** mount FS"
-_scratch_mount
+_scratch_mount -o kernelcache,writelog
 
 cd $SCRATCH_MNT
 

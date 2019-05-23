@@ -42,7 +42,7 @@ testfile=$SCRATCH_MNT/testfile
 OD_CMD="od -A x -t x1z"
 
 _scratch_mkfs > /dev/null 2>&1
-_scratch_mount
+_scratch_mount -o 0readbuffer
 
 # 1. make a file containing inline_data.
 # 2. "truncated 0"  is to check cached page #0 was truncated entirely.
@@ -56,7 +56,7 @@ $testfile | _filter_xfs_io
 
 echo "= truncate inline_data after #0 page was truncated entirely ="
 $OD_CMD $testfile
-_scratch_cycle_mount
+_scratch_cycle_mount 0readbuffer
 $OD_CMD $testfile
 rm $testfile
 
@@ -72,7 +72,7 @@ $testfile | _filter_xfs_io
 
 echo "= truncate dismissed inline_data after #0 page was truncated entirely ="
 $OD_CMD $testfile
-_scratch_cycle_mount
+_scratch_cycle_mount 0readbuffer
 $OD_CMD $testfile
 rm $testfile
 
@@ -88,7 +88,7 @@ $testfile | _filter_xfs_io
 
 echo "= truncate inline_data after #0 page was truncated partially ="
 $OD_CMD $testfile
-_scratch_cycle_mount
+_scratch_cycle_mount 0readbuffer
 $OD_CMD $testfile
 rm $testfile
 
@@ -104,7 +104,7 @@ $testfile | _filter_xfs_io
 
 echo "= truncate dismissed inline_data after #0 page was truncated partially ="
 $OD_CMD $testfile
-_scratch_cycle_mount
+_scratch_cycle_mount 0readbuffer
 $OD_CMD $testfile
 rm $testfile
 

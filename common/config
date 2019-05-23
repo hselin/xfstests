@@ -373,7 +373,7 @@ _test_mount_opts()
 		export TEST_FS_MOUNT_OPTS=$GLUSTERFS_MOUNT_OPTIONS
 		;;
 	papyros)
-		export TEST_FS_MOUNT_OPTS=$PAPYROS_MOUNT_OPTIONS
+		export TEST_FS_MOUNT_OPTS=$PAPYROS_TEST_FS_MOUNT_OPTIONS
 		;;
 	ext2|ext3|ext4|ext4dev)
 		# acls & xattrs aren't turned on by default on older ext$FOO

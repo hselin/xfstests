@@ -23,6 +23,15 @@ DMTHIN_VOL_DEV="/dev/mapper/$DMTHIN_VOL_NAME"
 
 _dmthin_cleanup()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_unmount $SCRATCH_MNT > /dev/null 2>&1
+		_dmsetup_remove $DMTHIN_VOL_NAME
+		_dmsetup_remove $DMTHIN_POOL_NAME
+		_dmsetup_remove $DMTHIN_META_NAME
+		_dmsetup_remove $DMTHIN_DATA_NAME
+		return $?
+	fi
+
 	$UMOUNT_PROG $SCRATCH_MNT > /dev/null 2>&1
 	_dmsetup_remove $DMTHIN_VOL_NAME
 	_dmsetup_remove $DMTHIN_POOL_NAME
@@ -32,6 +41,12 @@ _dmthin_cleanup()
 
 _dmthin_check_fs()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_unmount $SCRATCH_MNT > /dev/null 2>&1
+		_check_scratch_fs $DMTHIN_VOL_DEV
+		return $?
+	fi
+
 	$UMOUNT_PROG $SCRATCH_MNT > /dev/null 2>&1
 	_check_scratch_fs $DMTHIN_VOL_DEV
 }
@@ -223,5 +238,10 @@ _dmthin_mount_options()
 
 _dmthin_mount()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_mount $DMTHIN_VOL_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $*
+		return $?
+	fi
+
 	_mount -t $FSTYP `_dmthin_mount_options $*`
 }

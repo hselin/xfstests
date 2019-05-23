@@ -23,7 +23,7 @@ _mount_flakey()
 {
 	if [ "$FSTYP" == "papyros" ]; then
 		_papyros_replace_device $SCRATCH_MD_DIR $SCRATCH_DEV $FLAKEY_DEV
-		_papyros_mount $FLAKEY_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $MOUNT_OPTIONS
+		_papyros_mount $FLAKEY_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $*
 		return $?
 	fi
 
@@ -43,12 +43,21 @@ _unmount_flakey()
 
 _cleanup_flakey()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		# If dmsetup load fails then we need to make sure to do resume here
+		# otherwise the umount will hang
+		$DMSETUP_PROG resume flakey-test > /dev/null 2>&1
+		_papyros_unmount $SCRATCH_MNT > /dev/null 2>&1
+		_dmsetup_remove flakey-test
+		_papyros_replace_device $SCRATCH_MD_DIR $FLAKEY_DEV $SCRATCH_DEV
+		return $?
+	fi
+
 	# If dmsetup load fails then we need to make sure to do resume here
 	# otherwise the umount will hang
 	$DMSETUP_PROG resume flakey-test > /dev/null 2>&1
 	$UMOUNT_PROG $SCRATCH_MNT > /dev/null 2>&1
 	_dmsetup_remove flakey-test
-	_papyros_replace_device $SCRATCH_MD_DIR $FLAKEY_DEV $SCRATCH_DEV
 }
 
 # _load_flakey_table <table> [lockfs]
@@ -86,10 +95,11 @@ _flakey_drop_and_remount()
 
 	if [ "x$1" = "xyes" ]; then
 		_check_scratch_fs $FLAKEY_DEV
+		shift
 	fi
 
 	_load_flakey_table $FLAKEY_ALLOW_WRITES
-	_mount_flakey
+	_mount_flakey $*
 }
 
 _require_flakey_with_error_writes()
