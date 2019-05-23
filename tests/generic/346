@@ -31,11 +31,13 @@ _require_test_program "holetest"
 rm -f $seqres.full
 
 _scratch_mkfs >>$seqres.full 2>&1
-_scratch_mount
+_scratch_mount -o kernelcache
 
 src/holetest -f -w $SCRATCH_MNT/testfile 1
 src/holetest -f -w $SCRATCH_MNT/testfile 16
 src/holetest -f -w $SCRATCH_MNT/testfile 256
+
+sync
 
 status=0
 exit

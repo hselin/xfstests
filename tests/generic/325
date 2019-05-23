@@ -44,7 +44,7 @@ rm -f $seqres.full
 _scratch_mkfs >> $seqres.full 2>&1
 _require_metadata_journaling $SCRATCH_DEV
 _init_flakey
-_mount_flakey
+_mount_flakey -o kernelcache
 
 # Create the file first.
 $XFS_IO_PROG -f -c "pwrite -S 0xff 0 256K" $SCRATCH_MNT/foo | _filter_xfs_io

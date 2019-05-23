@@ -32,6 +32,12 @@ _dmerror_init()
 
 _dmerror_mount()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_replace_device $SCRATCH_MD_DIR $SCRATCH_DEV $DMERROR_DEV
+		_papyros_mount $DMERROR_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $*
+		return $?
+	fi
+
 	_scratch_options mount
 	$MOUNT_PROG -t $FSTYP `_common_dev_mount_options $*` $SCRATCH_OPTIONS \
 		$DMERROR_DEV $SCRATCH_MNT
@@ -39,11 +45,23 @@ _dmerror_mount()
 
 _dmerror_unmount()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_unmount $SCRATCH_MNT
+		return $?
+	fi
+
 	umount $SCRATCH_MNT
 }
 
 _dmerror_cleanup()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_unmount $SCRATCH_MNT > /dev/null 2>&1
+		_dmsetup_remove error-test
+		_papyros_replace_device $SCRATCH_MD_DIR $DMERROR_DEV $SCRATCH_DEV
+		return $?
+	fi
+
 	$UMOUNT_PROG $SCRATCH_MNT > /dev/null 2>&1
 	_dmsetup_remove error-test
 }

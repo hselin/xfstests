@@ -6,6 +6,10 @@
 #
 # looptests created from CXFSQA test looptest
 #
+
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#set -x
+
 seq=`basename $0`
 seqres=$RESULT_DIR/$seq
 echo "QA output created by $seq"
@@ -33,7 +37,7 @@ _require_scratch
 _require_sparse_files
 
 _scratch_mkfs >/dev/null 2>&1
-_scratch_mount "-o nosuid"
+_scratch_mount "-o nosuid,kernelcache"
 
 mkdir $SCRATCH_MNT/looptest
 

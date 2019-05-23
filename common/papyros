@@ -1,4 +1,4 @@
-# papyros 
+# papyros
 
 export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 #set -x
@@ -11,15 +11,14 @@ _papyros_mount()
 	local md_directory=$3
 	local opts=$5
 
-	local opt_str="allow_other,clone_fd,exec,nosuid"
+	local opt_str="allow_other,clone_fd,exec,nosuid,default_permissions"
 
 	# $4 ... -o
 	# $5 ... remount,ro / nosuid / etc
 
-	#if [[ "$4" == *"remount"* ]]; then
-		#fusermount -u $mnt_directory
-	#fi
-
+	if [[ $opts == *"remount"* ]]; then
+		_papyros_unmount $mnt_directory
+	fi
 
 	if [[ $opts == *"noatime"* ]]; then
 		opt_str+=",noatime"
@@ -31,6 +30,22 @@ _papyros_mount()
 
 	if [[ $opts == *"ro"* ]]; then
 		opt_str+=",ro"
+	fi
+
+	if [[ $opts == *"kernelcache"* ]]; then
+		opt_str+=",kernelcache"
+	fi
+
+	if [[ $opts == *"writelog"* ]]; then
+		opt_str+=",writelog"
+	fi
+
+	if [[ $opts == *"0readbuffer"* ]]; then
+		opt_str+=",0readbuffer"
+	fi
+
+	if [[ $opts == *"noforget"* ]]; then
+		opt_str+=",noforget"
 	fi
 
 	#echo $opt_str
@@ -56,8 +71,10 @@ _papyros_remount()
 _papyros_unmount()
 {
 	local mnt_directory=$1
+
+	sync
 	umount $mnt_directory
-	sleep 5
+	sleep 1
 }
 
 _check_papyros_filesystem()

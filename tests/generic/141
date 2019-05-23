@@ -25,7 +25,7 @@ _supported_os Linux
 
 _require_scratch
 _scratch_mkfs >/dev/null 2>&1
-_scratch_mount
+_scratch_mount -o kernelcache
 
 # create file, mmap a region and mmap read it
 file=$SCRATCH_MNT/mmap

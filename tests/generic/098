@@ -45,7 +45,7 @@ fi
 rm -f $seqres.full
 
 _scratch_mkfs >>$seqres.full 2>&1
-_scratch_mount
+_scratch_mount -o 0readbuffer
 
 workout()
 {
@@ -75,7 +75,7 @@ workout()
 	# disk.
 	$XFS_IO_PROG -c "truncate 160K" $SCRATCH_MNT/foo
 
-	_scratch_cycle_mount
+	_scratch_cycle_mount "0readbuffer"
 
 	# We expect to see a file with a size of 160Kb, with the first 128Kb of data all
 	# having the value 0xaa and the remaining 32Kb of data all having the value 0x00
