@@ -70,23 +70,46 @@ mpA=$MNTHEAD/"$$"_mpA
 mpB=$MNTHEAD/"$$"_mpB
 mpC=$MNTHEAD/"$$"_mpC
 
+ROOT_PAPYROS_MNT=$PAPYROS_TEMP_MNT/$seq
+
 find_mnt()
 {
-	echo "------"
-	findmnt -n -o TARGET,SOURCE $SCRATCH_DEV | \
-		sed -e "s;$mpA;mpA;g" \
-		    -e "s;$mpB;mpB;g" \
-		    -e "s;$mpC;mpC;g" | \
-		_filter_spaces | _filter_testdir_and_scratch | sort
-	echo "======"
+	if [ "$FSTYP" == "papyros" ]; then
+		echo "------"
+		findmnt -R -r -n -o TARGET,SOURCE $MNTHEAD | \
+			grep "heracles" | \
+			sed -e "s;heracles;$SCRATCH_DEV;g" | \
+			sed -e "s;$mpA;mpA;g" \
+			    -e "s;$mpB;mpB;g" \
+			    -e "s;$mpC;mpC;g" | \
+			_filter_spaces | _filter_testdir_and_scratch | sort
+		echo "======"
+	else
+		echo "------"
+		findmnt -n -o TARGET,SOURCE $SCRATCH_DEV | \
+			sed -e "s;$mpA;mpA;g" \
+			    -e "s;$mpB;mpB;g" \
+			    -e "s;$mpC;mpC;g" | \
+			_filter_spaces | _filter_testdir_and_scratch | sort
+		echo "======"
+	fi
 }
 
 start_test()
 {
 	local type=$1
 
-	_scratch_mkfs >$seqres.full 2>&1
-	_get_mount -t $FSTYP $SCRATCH_DEV $MNTHEAD
+	if [ "$FSTYP" == "papyros" ]; then
+		_scratch_mkfs >$seqres.full 2>&1
+		mkdir -p $ROOT_PAPYROS_MNT
+		_papyros_mount $SCRATCH_DEV $ROOT_PAPYROS_MNT $SCRATCH_MD_DIR
+		mount --make-slave $ROOT_PAPYROS_MNT
+		_get_mount --bind $ROOT_PAPYROS_MNT $MNTHEAD
+	else
+		_scratch_mkfs >$seqres.full 2>&1
+		_get_mount -t $FSTYP $SCRATCH_DEV $MNTHEAD
+	fi
+
 	$MOUNT_PROG --make-"${type}" $MNTHEAD
 	mkdir $mpA $mpB $mpC
 }
@@ -95,6 +118,10 @@ end_test()
 {
 	_clear_mount_stack
 	rm -rf $mpA $mpB $mpC
+
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_unmount $ROOT_PAPYROS_MNT
+	fi
 }
 
 #
@@ -108,17 +135,33 @@ crash_test()
 {
 	start_test shared
 
-	_get_mount -t $FSTYP $SCRATCH_DEV $mpA
+	if [ "$FSTYP" == "papyros" ]; then
+		_get_mount --bind $ROOT_PAPYROS_MNT $mpA
+	else
+		_get_mount -t $FSTYP $SCRATCH_DEV $mpA
+	fi
+
 	mkdir $mpA/mnt1
 	$MOUNT_PROG --make-shared $mpA
 	_get_mount --bind $mpA $mpB
 	_get_mount --bind $mpA $mpC
 	$MOUNT_PROG --make-slave $mpB
 	$MOUNT_PROG --make-slave $mpC
-	_get_mount -t $FSTYP $SCRATCH_DEV $mpA/mnt1
+
+	if [ "$FSTYP" == "papyros" ]; then
+		_get_mount --bind $ROOT_PAPYROS_MNT $mpA/mnt1
+	else
+		_get_mount -t $FSTYP $SCRATCH_DEV $mpA/mnt1
+	fi
+
 	mkdir $mpA/mnt1/mnt2
 
-	_get_mount -t $FSTYP $SCRATCH_DEV $mpB/mnt1/mnt2
+	if [ "$FSTYP" == "papyros" ]; then
+		_get_mount --bind $ROOT_PAPYROS_MNT $mpB/mnt1/mnt2
+	else
+		_get_mount -t $FSTYP $SCRATCH_DEV $mpB/mnt1/mnt2
+	fi
+
 	find_mnt
 	fs_stress $mpB/mnt1/mnt2
 

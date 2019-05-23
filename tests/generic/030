@@ -37,7 +37,7 @@ _require_xfs_io_command "mremap"
 testfile=$SCRATCH_MNT/testfile
 
 _scratch_mkfs > /dev/null 2>&1
-_scratch_mount
+_scratch_mount -o kernelcache
 
 # first case is just truncate down/truncate up to check that the mapped
 # write after the truncate up is correctly handled.
@@ -58,7 +58,7 @@ $testfile | _filter_xfs_io
 
 echo "==== Pre-Remount ==="
 hexdump -C $testfile
-_scratch_cycle_mount
+_scratch_cycle_mount kernelcache
 echo "==== Post-Remount =="
 hexdump -C $testfile
 
@@ -87,7 +87,7 @@ $testfile | _filter_xfs_io
 
 echo "==== Pre-Remount ==="
 hexdump -C $testfile
-_scratch_cycle_mount
+_scratch_cycle_mount kernelcache
 echo "==== Post-Remount =="
 hexdump -C $testfile
 
@@ -123,7 +123,7 @@ $testfile | _filter_xfs_io
 
 echo "==== Pre-Remount ==="
 hexdump -C $testfile
-_scratch_cycle_mount
+_scratch_cycle_mount kernelcache
 echo "==== Post-Remount =="
 hexdump -C $testfile
 

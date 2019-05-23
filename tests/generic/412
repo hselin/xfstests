@@ -33,7 +33,7 @@ _require_odirect
 rm -f $seqres.full
 
 _scratch_mkfs >>$seqres.full 2>&1
-_scratch_mount
+_scratch_mount -o 0readbuffer
 
 # Create out test file with two extents and a hole between those extents.
 # The extent that lies beyond the hole must be written using direct IO and later
@@ -50,7 +50,7 @@ $XFS_IO_PROG -c "truncate 60K" $SCRATCH_MNT/foo
 # again. The digests should match (same file data and size in both cases).
 echo "File digest before unmounting the filesystem:"
 md5sum $SCRATCH_MNT/foo | _filter_scratch
-_scratch_cycle_mount
+_scratch_cycle_mount 0readbuffer
 echo "File digest after mounting again the filesystem:"
 md5sum $SCRATCH_MNT/foo | _filter_scratch
 

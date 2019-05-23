@@ -7,6 +7,10 @@
 # Test very basic thin device usage, exhaustion, and growth
 #
 #
+
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#set -x
+
 seq=`basename $0`
 seqres=$RESULT_DIR/$seq
 echo "QA output created by $seq"
@@ -29,6 +33,14 @@ _cleanup()
 
 _setup_thin()
 {
+	if [ "$FSTYP" == "papyros" ]; then
+		_dmthin_init $BACKING_SIZE $VIRTUAL_SIZE
+		_dmthin_set_queue
+		LD_LIBRARY_PATH=/home/hselin/share/evimero/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $DMTHIN_VOL_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR > /dev/null 2>&1
+		_dmthin_mount
+		return $?
+	fi
+
 	_dmthin_init $BACKING_SIZE $VIRTUAL_SIZE
 	_dmthin_set_queue
 	_dmthin_mkfs

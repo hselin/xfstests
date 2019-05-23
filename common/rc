@@ -203,6 +203,12 @@ _get_mount()
 	fi
 }
 
+_push_mount()
+{
+	local mnt_point=$1
+	MOUNTED_POINT_STACK="$mnt_point $MOUNTED_POINT_STACK"
+}
+
 # Unmount the last mounted mountpoint in MOUNTED_POINT_STACK
 # and return it to caller
 _put_mount()
@@ -411,14 +417,15 @@ _scratch_remount()
 {
     local opts="$1"
 
-    if test -n "$opts"; then
-	if [ "$FSTYP" == "papyros"]; then
-		_papyros_remount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $opts
+	if [ "$FSTYP" == "papyros" ]; then
+		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR -o remount,$opts
 		return $?
 	else
 		_try_scratch_mount "-o remount,$opts"
 	fi
-	mount -o "remount,$opts" $SCRATCH_MNT
+
+    if test -n "$opts"; then
+	_try_scratch_mount "-o remount,$opts"
     fi
 }
 
@@ -471,10 +478,13 @@ _test_mount()
         _overlay_test_mount $*
         return $?
     fi
+
     if [ "$FSTYP" == "papyros" ]; then
-        _papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $*
+        #_papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $*
+        _papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $TEST_FS_MOUNT_OPTS
         return $?
     fi
+
     _test_options mount
     _mount -t $FSTYP $TEST_OPTIONS $TEST_FS_MOUNT_OPTS $SELINUX_MOUNT_OPTIONS $* $TEST_DEV $TEST_DIR
 }
