@@ -43,7 +43,7 @@ _scratch_mkfs >> $seqres.full 2>&1
 _require_metadata_journaling $SCRATCH_DEV
 
 _init_flakey
-_mount_flakey
+_mount_flakey -o kernelcache
 
 # See this post for reverse engineering of this auto generated test:
 # https://marc.info/?l=linux-ext4&m=151137380830381&w=2
