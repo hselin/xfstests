@@ -9,6 +9,10 @@
 # on all fds and fsync on all fds. Ensure that we get errors on all of them.
 # Then fsync on all one last time and verify that all return 0.
 #
+
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+#set -x
+
 seq=`basename $0`
 seqres=$RESULT_DIR/$seq
 echo "QA output created by $seq"
@@ -60,7 +64,7 @@ rm -f $seqres.full
 echo "Format and mount"
 _scratch_mkfs > $seqres.full 2>&1
 _dmerror_init
-_dmerror_mount
+_dmerror_mount "-o kernelcache,writeback"
 
 _require_fs_space $SCRATCH_MNT 65536
 

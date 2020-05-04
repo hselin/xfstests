@@ -35,7 +35,8 @@ echo "*** mkfs"
 _scratch_mkfs >/dev/null 2>&1 || _fail "mkfs failed"
 
 echo "*** mount FS"
-_scratch_mount -o kernelcache,writelog
+#_scratch_mount -o kernelcache,writelog
+_scratch_mount -o kernelcache,kernelcachewriteback
 
 cd $SCRATCH_MNT
 
