@@ -3482,6 +3482,8 @@ _require_scratch_shutdown()
 			$here/src/godown -f $OVL_BASE_SCRATCH_MNT 2>&1 \
 			|| _notrun "Underlying filesystem does not support shutdown"
 		fi
+	elif [ "$FSTYP" == "papyros" ]; then
+		_notrun "$FSTYP does not support shutdown"
 	else
 		$here/src/godown -f $SCRATCH_MNT 2>&1 \
 			|| _notrun "$FSTYP does not support shutdown"
