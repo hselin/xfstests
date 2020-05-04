@@ -65,7 +65,7 @@ _papyros_mount()
 	#echo $!
 	#read -p "Press enter to continue"
 
-	sleep 2
+	sleep 5
 
 	return 0
 }
@@ -87,7 +87,7 @@ _papyros_unmount()
 
 	sync
 	umount $mnt_directory
-	sleep 2
+	sleep 5
 }
 
 _check_papyros_filesystem()
