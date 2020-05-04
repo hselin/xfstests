@@ -1,3 +1,5 @@
+#! /bin/bash
+
 # papyros
 
 export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
@@ -36,6 +38,10 @@ _papyros_mount()
 		opt_str+=",kernelcache"
 	fi
 
+	if [[ $opts == *"writeback"* ]]; then
+		opt_str+=",kernelcachewriteback"
+	fi
+
 	if [[ $opts == *"writelog"* ]]; then
 		opt_str+=",writelog"
 	fi
@@ -50,9 +56,16 @@ _papyros_mount()
 
 	#echo $opt_str
 
+	ulimit -n 4096 > /dev/null 2>&1
+	ulimit -s 16384 > /dev/null 2>&1
+	ulimit -a > /dev/null 2>&1
+
 	$HERACLES_PATH/heracles $md_directory daemon $mnt_directory -f -o $opt_str
 
-	sleep 1
+	#echo $!
+	#read -p "Press enter to continue"
+
+	sleep 2
 
 	return 0
 }
@@ -74,7 +87,7 @@ _papyros_unmount()
 
 	sync
 	umount $mnt_directory
-	sleep 1
+	sleep 2
 }
 
 _check_papyros_filesystem()
