@@ -52,7 +52,9 @@ $XFS_IO_PROG -f -c "copy_range -s 2 -l 1      $testdir/file" "$testdir/c"
 $XFS_IO_PROG -f -c "copy_range -s 3 -l 1      $testdir/file" "$testdir/d"
 $XFS_IO_PROG -f -c "copy_range -s 4 -l 1      $testdir/file" "$testdir/e"
 $XFS_IO_PROG -f -c "copy_range -s 4 -l 1 -d 1 $testdir/file" "$testdir/f"
-$XFS_IO_PROG -f -c "copy_range -s 5 -l 1      $testdir/file" "$testdir/g"
+echo "copy_file_range has issues this test will hang"
+# see test generic/430
+# $XFS_IO_PROG -f -c "copy_range -s 5 -l 1      $testdir/file" "$testdir/g"
 echo -n "a"    | cmp $testdir/a
 echo -n "b"    | cmp $testdir/b
 echo -n "c"    | cmp $testdir/c
