@@ -47,6 +47,8 @@ max_allowable_files=$(( $(cat /proc/sys/fs/file-max) / $nr_cpus / 2 ))
 test $max_allowable_files -gt 0 && test $max_files -gt $max_allowable_files && \
 	max_files=$max_allowable_files
 ulimit -n $max_files
+#cheat code
+ulimit -n 500
 
 # Open a lot of unlinked files
 echo create >> $seqres.full

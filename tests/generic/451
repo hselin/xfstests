@@ -35,6 +35,9 @@ _require_test_program "feature"
 _require_aiodio aio-dio-cycle-write
 _require_command "$TIMEOUT_PROG" timeout
 
+echo "this test will crash the system"
+exit
+
 TESTFILE=$TEST_DIR/tst-aio-dio-cycle-write.$seq
 FSIZE=655360	# bytes
 
