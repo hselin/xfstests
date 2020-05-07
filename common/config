@@ -514,8 +514,8 @@ _check_device()
 		fi
 		;;
 	papyros)
-		if [ ! -d "$dev" ]; then
-			_fatal "common/config: $name ($dev) is not a directory for papyros"
+		if [ ! -b "$dev" ] && [ ! -c "$dev" ]; then
+			_fatal "common/config: $name ($dev) is not a valid device for papyros"
 		fi
 		;;
 	ubifs)
