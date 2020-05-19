@@ -66,7 +66,7 @@ $UDEV_SETTLE_PROG >>$seqres.full 2>&1
 
 # _mkfs_dev exits the test on failure, this makes sure test lv is created by
 # above vgcreate/lvcreate operations
-_mkfs_dev /dev/mapper/$vgname-$lvname
+_mkfs_dev /dev/mapper/$vgname-$lvname $SCRATCH_SPARE_DEV
 
 _mount /dev/mapper/$vgname-$lvname $SCRATCH_MNT
 
