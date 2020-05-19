@@ -183,7 +183,18 @@ _get_hugepagesize()
 
 _mount()
 {
-    $MOUNT_PROG `_mount_ops_filter $*`
+    DEV=$1
+    MNT_DIR=$2
+    case "$FSTYP" in
+    papyros)
+                MD_DIR=$MD_VOL$DEV
+		#echo "_papyros_mount $DEV $MNT_DIR $MD_DIR"
+                _papyros_mount $DEV $MNT_DIR $MD_DIR -o kernelcache,writeback
+		;;
+    *)
+                $MOUNT_PROG `_mount_ops_filter $*`    
+		;;
+    esac
 }
 
 # Call _mount to do mount operation but also save mountpoint to
@@ -693,6 +704,10 @@ _test_mkfs()
 _mkfs_dev()
 {
     local tmp=`mktemp -u`
+    DEV=$1
+    if [ $# -eq 2 ]; then
+       SPARE_DEV=$2
+    fi
     case $FSTYP in
     nfs*)
 	# do nothing for nfs
@@ -710,21 +725,28 @@ _mkfs_dev()
 	# do nothing for pvfs2
 	;;
     udf)
-        $MKFS_UDF_PROG $MKFS_OPTIONS $* 2>$tmp.mkfserr 1>$tmp.mkfsstd
+        $MKFS_UDF_PROG $MKFS_OPTIONS $DEV 2>$tmp.mkfserr 1>$tmp.mkfsstd
 	;;
     btrfs)
-        $MKFS_BTRFS_PROG $MKFS_OPTIONS $* 2>$tmp.mkfserr 1>$tmp.mkfsstd
+        $MKFS_BTRFS_PROG $MKFS_OPTIONS $DEV 2>$tmp.mkfserr 1>$tmp.mkfsstd
 	;;
     ext2|ext3|ext4)
-	$MKFS_PROG -t $FSTYP -- -F $MKFS_OPTIONS $* \
+	$MKFS_PROG -t $FSTYP -- -F $MKFS_OPTIONS $DEV \
 		2>$tmp.mkfserr 1>$tmp.mkfsstd
 	;;
     xfs)
-	$MKFS_PROG -t $FSTYP -- -f $MKFS_OPTIONS $* \
+	$MKFS_PROG -t $FSTYP -- -f $MKFS_OPTIONS $DEV \
 		2>$tmp.mkfserr 1>$tmp.mkfsstd
 	;;
+    papyros)
+        MD_DIR=$MD_VOL$DEV
+        mkdir -p $MD_DIR
+	#echo "_mkfs_papyros $DEV $SPARE_DEV $MD_DIR"
+	_mkfs_papyros $DEV $SPARE_DEV $MD_DIR \
+		2>$tmp.mkfserr 1>$tmp.mkfsstd
+	;;	
     *)
-	yes | $MKFS_PROG -t $FSTYP -- $MKFS_OPTIONS $* \
+	yes | $MKFS_PROG -t $FSTYP -- $MKFS_OPTIONS $DEV \
 		2>$tmp.mkfserr 1>$tmp.mkfsstd
 	;;
     esac
