@@ -183,6 +183,11 @@ _get_hugepagesize()
 
 _mount()
 {
+    $MOUNT_PROG `_mount_ops_filter $*`
+}
+
+_mount_real_dev()
+{
     DEV=$1
     MNT_DIR=$2
     case "$FSTYP" in
@@ -203,12 +208,12 @@ _get_mount()
 {
 	local mnt_point=${!#}
 	local mnt_dev=${@:(-2):1}
+
 	local scratch_opts=""
 	if [ "$mnt_dev" = "$SCRATCH_DEV" ]; then
 		_scratch_options mount
 		scratch_opts="$SCRATCH_OPTIONS"
 	fi
-
 	_mount $scratch_opts $*
 	if [ $? -eq 0 ]; then
 		# mount --move operation updates the mountpoint, so remove
@@ -2870,7 +2875,7 @@ _check_test_fs()
     glusterfs)
 	# no way to check consistency for GlusterFS
 	;;
-	papyros)
+    papyros)
 	_check_papyros_filesystem $TEST_DEV
 	;;
     overlay)
