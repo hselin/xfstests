@@ -379,6 +379,9 @@ char		*execute_cmd = NULL;
 int		execute_freq = 1;
 struct print_string	flag_str = {0};
 
+// Amy change: added debugging print statements
+int amydebug = 0;
+
 void	add_to_flist(int, int, int, int);
 void	append_pathname(pathname_t *, char *);
 int	attr_list_path(pathname_t *, char *, const int, int, attrlist_cursor_t *);
@@ -426,6 +429,43 @@ void	usage(void);
 void	write_freq(void);
 void	zero_freq(void);
 void	non_btrfs_freq(const char *);
+
+void printBuffer(unsigned char *buf, unsigned int length, int print_header)
+{
+    unsigned int i;
+    unsigned int x;
+
+    if(print_header)
+    {
+        printf("buf:%p | length: %d\n", buf, length);
+        printf("------------------------\n");
+    }
+
+    printf("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F ASCII\n");
+
+    for(i = 0; i < length; i += 16)
+    {
+        printf("%4x  ", i);
+
+        for(x = 0; x < 16; x++)
+        {
+            printf("%02x ", *((unsigned char *)buf+i+x));
+        }
+
+        for(x = 0; x < 16; x++)
+        {
+            if((*((unsigned char *)buf+i+x) > 32 ) && (*((unsigned char *)buf+i+x) < 127 ))
+            {
+                printf("%c", *((unsigned char *)buf+i+x));
+            }
+            else
+            {
+                printf(".");
+            }
+        }
+        printf("\n");
+    }
+}
 
 void sg_handler(int signum)
 {
@@ -1097,6 +1137,13 @@ doproc(void)
 	srandom(seed);
 	if (namerand)
 		namerand = random();
+	// Amy hack: specify just 2 operations to run, don't random pick
+//	p = &ops[11];
+//	printf ("p name = %s, p type = %d\n", p->name, p->op);
+//	p->func(opno, random());
+//	p = &ops[56];
+//	printf ("p name = %s, p type = %d\n", p->name, p->op);
+//	p->func(opno, random());
 	for (opno = 0; opno < operations; opno++) {
 		if (execute_cmd && opno && opno % dividend == 0) {
 			if (verbose)
@@ -1108,6 +1155,9 @@ doproc(void)
 					"%d\n", rval);
 		}
 		p = &ops[freq_table[random() % freq_table_size]];
+		if (amydebug == 1) {
+		  printf ("p name = %s, p type = %d\n", p->name, p->op);
+		}
 		p->func(opno, random());
 		/*
 		 * test for forced shutdown by stat'ing the test
@@ -3381,6 +3431,11 @@ dwrite_f(int opno, long r)
 	lseek64(fd, off, SEEK_SET);
 	memset(buf, nameseq & 0xff, len);
 	e = write(fd, buf, len) < 0 ? errno : 0;
+	if (amydebug == 1) {
+	  printf("writing...\n");
+	  printBuffer(buf, len, NULL);
+	  printf("writing end...\n");
+	}
 	free(buf);
 	if (v)
 		printf("%d/%d: dwrite %s%s [%lld,%d] %d\n",
@@ -5087,11 +5142,17 @@ write_f(int opno, long r)
 	lr = ((int64_t)random() << 32) + random();
 	off = (off64_t)(lr % MIN(stb.st_size + (1024 * 1024), MAXFSIZE));
 	off %= maxfsize;
+	if (amydebug == 1) {printf("seek to %d\n", off);}
 	lseek64(fd, off, SEEK_SET);
 	len = (random() % FILELEN_MAX) + 1;
 	buf = malloc(len);
 	memset(buf, nameseq & 0xff, len);
 	e = write(fd, buf, len) < 0 ? errno : 0;
+	if (amydebug == 1) {
+	  printf("writing ...\n");
+	  printBuffer(buf,len,NULL);
+	  printf("end writing ...\n");
+	}
 	free(buf);
 	if (v)
 		printf("%d/%d: write %s%s [%lld,%d] %d\n",
