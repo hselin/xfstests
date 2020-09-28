@@ -14,7 +14,7 @@ _papyros_mount()
 	local wl_directory=$4
 	local opts=$6
 
-	local opt_str="allow_other,clone_fd,exec,nosuid,default_permissions,dev"
+	local opt_str="allow_other,clone_fd,exec,nosuid,default_permissions,dev,0readbuffer"
 
 	# $4 ... -o
 	# $5 ... remount,ro / nosuid / etc
