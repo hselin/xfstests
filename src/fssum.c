@@ -82,6 +82,46 @@ char line[65536];
 
 int flags[NUM_FLAGS] = {1, 1, 1, 1, 1, 0, 1, 1, 0, 0};
 
+int amydebug = 0;
+
+
+void printBuffer(unsigned char *buf, unsigned int length, int print_header)
+{
+    unsigned int i;
+    unsigned int x;
+
+    if(print_header)
+    {
+        printf("buf:%p | length: %d\n", buf, length);
+        printf("------------------------\n");
+    }
+
+    printf("      00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F ASCII\n");
+
+    for(i = 0; i < length; i += 16)
+    {
+        printf("%4x  ", i);
+
+        for(x = 0; x < 16; x++)
+        {
+            printf("%02x ", *((unsigned char *)buf+i+x));
+        }
+
+        for(x = 0; x < 16; x++)
+        {
+            if((*((unsigned char *)buf+i+x) > 32 ) && (*((unsigned char *)buf+i+x) < 127 ))
+            {
+                printf("%c", *((unsigned char *)buf+i+x));
+            }
+            else
+            {
+                printf(".");
+            }
+        }
+        printf("\n");
+    }
+}
+
 char *
 getln(char *buf, int size, FILE *fp)
 {
@@ -325,9 +365,14 @@ int
 sum_file_data_permissive(int fd, sum_t *dst)
 {
 	int ret;
-
+	if (amydebug == 1) {printf("sum_file_data_permissive\n");}
 	while (1) {
 		ret = read(fd, buf, sizeof(buf));
+		if (amydebug == 1) {
+		  printf("reading 1...\n");
+		  printBuffer(buf, sizeof(buf), 1);
+		  printf("reading 1 end...\n");
+		}
 		if (ret < 0)
 			return -errno;
 		sum_add(dst, buf, ret);
@@ -342,7 +387,7 @@ sum_file_data_strict(int fd, sum_t *dst)
 {
 	int ret;
 	off_t pos;
-
+        if (amydebug == 1) {printf ("in sum_file_data_strict\n");}
 	pos = lseek(fd, 0, SEEK_CUR);
 	if (pos == (off_t)-1)
 		return errno == ENXIO ? 0 : -2;
@@ -352,6 +397,11 @@ sum_file_data_strict(int fd, sum_t *dst)
 		if (pos == (off_t)-1)
 			return errno == ENXIO ? 0 : -2;
 		ret = read(fd, buf, sizeof(buf));
+		if (amydebug == 1) {
+		  printf("reading ...\n");
+		  printBuffer(buf, sizeof(buf), NULL);
+		  printf("reading end ...\n");
+		}
 		assert(ret); /* eof found by lseek */
 		if (ret <= 0)
 			return ret;
@@ -424,6 +474,7 @@ check_match(char *fn, char *local_m, char *remote_m,
 
 	if (match_m && !match_c) {
 		printf("data mismatch in %s\n", fn);
+		if (amydebug == 1) {printf("c=%s, rem_c=%s\n", local_c, remote_c);}
 	} else if (!match_m && match_c) {
 		printf("metadata mismatch in %s\n", fn);
 	} else if (!match_m && !match_c) {
@@ -558,6 +609,7 @@ sum(int dirfd, int level, sum_t *dircs, char *path_prefix, char *path_in)
 		sum_init(&meta);
 		path = alloc(strlen(path_in) + strlen(namelist[i]) + 3);
 		sprintf(path, "%s/%s", path_in, namelist[i]);
+		if (amydebug == 1) {printf("file = %s\n", path);}
 		for (excl = 0; excl < n_excludes; ++excl) {
 			if (strncmp(excludes[excl].path, path,
 			    excludes[excl].len) == 0)
@@ -826,6 +878,7 @@ main(int argc, char *argv[])
 
 	path = argv[optind];
 	plen = strlen(path);
+	if (amydebug == 1) {printf("dir = %s\n", path);}
 	if (path[plen - 1] == '/') {
 		--plen;
 		path[plen] = '\0';
@@ -872,7 +925,9 @@ main(int argc, char *argv[])
 			fprintf(out_fp, "%s:", flagstring);
 
 		fprintf(out_fp, "%s\n", sum_to_string(&cs));
+		if (amydebug == 1) {printf("out_fp <= %s\n", sum_to_string(&cs));}
 	} else {
+	  if (amydebug == 1) {printf("compare vs %s\n", sum_to_string(&cs));}
 		if (strcmp(checksum, sum_to_string(&cs)) == 0) {
 			printf("OK\n");
 			exit(0);
