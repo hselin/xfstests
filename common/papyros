@@ -61,8 +61,15 @@ _papyros_mount()
 	ulimit -s 16384 > /dev/null 2>&1
 	ulimit -a > /dev/null 2>&1
 
-	$HERACLES_PATH/heracles $md_directory $wl_directory daemon $mnt_directory -f -o $opt_str
-
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+#	    echo "docker run --rm -ti -d  --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared --mount type=bind,src=$mnt_directory,dst=/mnt,bind-propagation=rshared --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -p $opt_str -m"
+	    docker run --rm -ti -d --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared --mount type=bind,src=$mnt_directory,dst=/mnt,bind-propagation=rshared --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -p $opt_str -m > /dev/null 2>&1
+	    #	    sleep 10; docker ps
+	    sleep 10;
+	else
+	    $HERACLES_PATH/heracles $md_directory $wl_directory daemon $mnt_directory -f -o $opt_str
+	fi
+	
 	#echo $!
 	#read -p "Press enter to continue"
 
@@ -77,10 +84,15 @@ _papyros_remount()
 	local mnt_directory=$2
 	local md_directory=$3
 	local wl_directory=$4
-
+	
 	fusermount -u $mnt_directory
 
-	$HERACLES_PATH/heracles $md_directory $wl_directory $mnt_directory -f -o allow_other,clone_fd,exec,nosuid
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+#	    echo "docker run --rm -ti -d --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared --mount type=bind,src=$wl_directory,dst=/wl-vol,bind-propagation=rshared --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared --mount type=bind,src=$mnt_directory,dst=/mnt,bind-propagation=rshared --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -s -n -p allow_other,clone_fd,exec,nosuid -m"
+	    docker run --rm -ti -d --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared --mount type=bind,src=$wl_directory,dst=/wl-vol,bind-propagation=rshared --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared --mount type=bind,src=$mnt_directory,dst=/mnt,bind-propagation=rshared --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -s -n -p allow_other,clone_fd,exec,nosuid -m > /dev/null 2>&1
+	else
+	    $HERACLES_PATH/heracles $md_directory $wl_directory $mnt_directory -f -o allow_other,clone_fd,exec,nosuid
+	fi
 }
 
 _papyros_unmount()
@@ -108,7 +120,12 @@ _mkfs_papyros()
 	rm -f $md_directory/*
 	mkdir -p $wl_directory
 	rm -f $wl_directory/*
-	$HERACLES_PATH/mkfs.heracles $md_directory $device,$spare_device 1 1
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+#	    echo "docker run --rm -ti --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -d $device,$spare_device -l 1 -a 1  -b"
+	    docker run --rm -ti --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -d $device,$spare_device -l 1 -a 1  -b > /dev/null 2>&1
+	else
+	    $HERACLES_PATH/mkfs.heracles $md_directory $device,$spare_device 1 1
+	fi
 }
 
 _papyros_is_mounted()
@@ -130,6 +147,12 @@ _papyros_replace_device()
 	local md_directory=$1
 	local from_device_path=$2
 	local to_device_path=$3
-
-	$HERACLES_PATH/replace_device $md_directory $from_device_path $to_device_path > /dev/null 2>&1
+	if [ $HERACLES_IN_CONTAINER -eq 1 ] && [[ $mnt_directory =~ (.*)/phalanx ]]; then mnt_directory=${BASH_REMATCH[1]}; fi
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+#	    echo "docker run --rm -ti --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -r \"$from_device_path $to_device_path\""
+#	    docker run --rm -ti --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -r "$from_device_path $to_device_path" > /dev/null 2>&1
+	    docker run --rm -ti --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -r "$from_device_path $to_device_path" > /dev/null 2>&1
+	else
+	    $HERACLES_PATH/replace_device $md_directory $from_device_path $to_device_path > /dev/null 2>&1
+	fi
 }

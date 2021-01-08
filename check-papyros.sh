@@ -19,6 +19,7 @@ export FSTYP=papyros
 if [[ -z ${TEST_DEV} ]]; then export TEST_DEV=/dev/loop100; fi
 if [[ -z ${TEST_SPARE_DEV} ]]; then export TEST_SPARE_DEV=/dev/loop101; fi
 export TEST_DIR=/mnt/xfstests/test_dir
+
 export TEST_MD_DIR=$MD_VOL$TEST_DEV
 export TEST_WL_DIR=$WL_VOL$TEST_DEV
 
@@ -45,6 +46,25 @@ export RECREATE_TEST_DEV=true
 
 export LIB_FUSE_PATH=$BASE_PATH/libfuse/build/lib/
 
+if [[ -v HERACLES_IN_CONTAINER ]]; then
+    if [ $HERACLES_IN_CONTAINER -eq 1 ]; then
+	echo "Testing heracles as container"
+	if [[ ! -v DOCKER_IMAGE_TAG ]]; then
+	    echo "HERACLES_IN_CONTAINER is 1 but DOCKER_IMAGE_TAG undefined"
+	    exit 1
+	fi
+	if [[ ! -v DOCKER_DEPOT ]]; then
+	    echo "HERACLES_IN_CONTAINER is 1 but DOCKER_DEPOT undefined"
+	    exit 1
+	fi
+	export CONTAINER_IMAGE=$DOCKER_DEPOT/heracles:$DOCKER_IMAGE_TAG
+    else
+	export HERACLES_IN_CONTAINER=0
+    fi
+else
+    export HERACLES_IN_CONTAINER=0
+fi
+
 umount $TEST_DIR
 umount $SCRATCH_MNT
 umount $PAPYROS_TEMP_MNT
@@ -55,7 +75,6 @@ source ./common/papyros
 
 LD_LIBRARY_PATH=$LIB_FUSE_PATH:$LD_LIBRARY_PATH _mkfs_papyros $TEST_DEV $TEST_SPARE_DEV $TEST_MD_DIR $TEST_WL_DIR
 LD_LIBRARY_PATH=$LIB_FUSE_PATH:$LD_LIBRARY_PATH _mkfs_papyros $SCRATCH_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR $SCRATCH_WL_DIR
-
 
 if [ $# -eq 0 ]; then
     LD_LIBRARY_PATH=$LIB_FUSE_PATH:$LD_LIBRARY_PATH ./check -b -g quick
