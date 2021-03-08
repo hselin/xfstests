@@ -12,6 +12,7 @@ fi
 export PATH=$PATH:/usr/local/bin
 
 export MD_VOL=/dev/shm/xfstests
+export MD_LOG=/dev/shm/xfstests_logs
 export WL_VOL=/dev/shm/xfstests/wl
 
 export FSTYP=papyros
@@ -69,7 +70,7 @@ umount $TEST_DIR
 umount $SCRATCH_MNT
 umount $PAPYROS_TEMP_MNT
 
-mkdir -p $TEST_DIR $SCRATCH_MNT $MD_VOL$TEST_DEV $MD_VOL$SCRATCH_DEV $PAPYROS_TEMP_MNT
+mkdir -p $TEST_DIR $SCRATCH_MNT $MD_LOG $MD_VOL$TEST_DEV $MD_VOL$SCRATCH_DEV $PAPYROS_TEMP_MNT
 
 source ./common/papyros
 
