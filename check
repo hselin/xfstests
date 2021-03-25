@@ -457,6 +457,11 @@ _wrapup()
 			echo "Passed all $n_try tests" >>$check.log
 			echo "Passed all $n_try tests" >>$tmp.summary
 		fi
+		if [ ! -z "$notrun" ]; then
+		    echo "Notruns:$notrun"
+		    echo "Didnt run $n_notrun of $n_try tests"
+		fi
+		
 		echo "" >>$tmp.summary
 		if $do_report; then
 			_make_section_report
