@@ -13,6 +13,7 @@ export PATH=$PATH:/usr/local/bin
 
 export MD_VOL=/dev/shm/xfstests
 export WL_VOL=/dev/shm/xfstests/wl
+export FM_VOL=/dev/shm/xfstests/fm
 
 export FSTYP=papyros
 
@@ -21,6 +22,7 @@ if [[ -z ${TEST_SPARE_DEV} ]]; then export TEST_SPARE_DEV=/dev/loop101; fi
 export TEST_DIR=/mnt/xfstests/test_dir
 export TEST_MD_DIR=$MD_VOL$TEST_DEV
 export TEST_WL_DIR=$WL_VOL$TEST_DEV
+export TEST_FM_DIR=$FM_VOL$TEST_DEV
 
 #SCRATCH_DEV needs to be CMR so dm-thin can be created
 #May  5 06:25:22 corfu kernel: [13013.664214] device-mapper: table: 253:0: start=10240 not aligned to h/w zone size 524288 of sde
@@ -32,6 +34,7 @@ if [[ -z ${SCRATCH_SPARE_DEV} ]]; then export SCRATCH_SPARE_DEV=/dev/loop103; fi
 export SCRATCH_MNT=/mnt/xfstests/scratch_dir
 export SCRATCH_MD_DIR=$MD_VOL$SCRATCH_DEV
 export SCRATCH_WL_DIR=$WL_VOL$SCRATCH_DEV
+export SCRATCH_FM_DIR=$FM_DIR$SCRATCH_DEV
 
 export PAPYROS_TEMP_MNT=/mnt/tmp
 

@@ -12,7 +12,8 @@ _papyros_mount()
 	local mnt_directory=$2
 	local md_directory=$3
 	local wl_directory=$4
-	local opts=$6
+	local fm_directory=$5
+	local opts=$7
 
 	local opt_str="allow_other,clone_fd,exec,nosuid,default_permissions,dev,0readbuffer"
 
@@ -61,7 +62,7 @@ _papyros_mount()
 	ulimit -s 16384 > /dev/null 2>&1
 	ulimit -a > /dev/null 2>&1
 
-	$HERACLES_PATH/heracles $md_directory $wl_directory daemon $mnt_directory -f -o $opt_str
+	$HERACLES_PATH/heracles $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str
 
 	#echo $!
 	#read -p "Press enter to continue"
@@ -77,10 +78,11 @@ _papyros_remount()
 	local mnt_directory=$2
 	local md_directory=$3
 	local wl_directory=$4
+	local fm_directory=$5
 
 	fusermount -u $mnt_directory
 
-	$HERACLES_PATH/heracles $md_directory $wl_directory $mnt_directory -f -o allow_other,clone_fd,exec,nosuid
+	$HERACLES_PATH/heracles $md_directory $wl_directory $mnt_directory $fm_directory -f -o allow_other,clone_fd,exec,nosuid
 }
 
 _papyros_unmount()

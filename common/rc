@@ -185,8 +185,9 @@ _mount_real_dev()
     papyros)
                 MD_DIR=$MD_VOL$DEV
                 WL_DIR=$WL_VOL$DEV
+		FM_DIR=$FM_VOL$DEV
 		#echo "_papyros_mount $DEV $MNT_DIR $MD_DIR"
-                _papyros_mount $DEV $MNT_DIR $MD_DIR $WL_DIR -o kernelcache,writeback
+                _papyros_mount $DEV $MNT_DIR $MD_DIR $WL_DIR $FM_DIR -o kernelcache,writeback
 		;;
     *)
                 $MOUNT_PROG `_mount_ops_filter $*`    
@@ -363,7 +364,7 @@ _try_scratch_mount()
 		_overlay_scratch_mount $*
 		return $?
 	elif [ "$FSTYP" == "papyros" ]; then
-		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $*
+		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR $*
 		return $?
 	fi
 	_mount -t $FSTYP `_scratch_mount_options $*`
@@ -435,7 +436,7 @@ _scratch_remount()
     local opts="$1"
 
 	if [ "$FSTYP" == "papyros" ]; then
-		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR -o remount,$opts
+		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR -o remount,$opts
 		return $?
 	else
 		_try_scratch_mount "-o remount,$opts"
@@ -498,7 +499,7 @@ _test_mount()
 
     if [ "$FSTYP" == "papyros" ]; then
         #_papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $*
-        _papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $TEST_WL_DIR $TEST_FS_MOUNT_OPTS
+        _papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $TEST_WL_DIR $TEST_FM_DIR $TEST_FS_MOUNT_OPTS
         return $?
     fi
 
@@ -774,6 +775,8 @@ _mkfs_dev()
         mkdir -p $MD_DIR
 	WL_DIR=$WL_VOL$DEV
         mkdir -p $WL_DIR
+	FM_DIR=$FM_VOL$DEV
+        mkdir -p $FM_DIR
 	#echo "_mkfs_papyros $DEV $SPARE_DEV $MD_DIR"
 	_mkfs_papyros $DEV $SPARE_DEV $MD_DIR $WL_DIR \
 		2>$tmp.mkfserr 1>$tmp.mkfsstd
