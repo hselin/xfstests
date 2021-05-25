@@ -62,6 +62,7 @@ _papyros_mount()
 	ulimit -s 16384 > /dev/null 2>&1
 	ulimit -a > /dev/null 2>&1
 
+	#echo "$HERACLES_PATH/heracles $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str"
 	$HERACLES_PATH/heracles $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str
 
 	#echo $!
@@ -91,7 +92,7 @@ _papyros_unmount()
 
 	sync
 	umount $mnt_directory
-	sleep 5
+	sleep 10
 }
 
 _check_papyros_filesystem()
