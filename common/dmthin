@@ -244,7 +244,7 @@ _dmthin_mount_options()
 _dmthin_mount()
 {
 	if [ "$FSTYP" == "papyros" ]; then
-		_papyros_mount $DMTHIN_VOL_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $*
+		_papyros_mount $DMTHIN_VOL_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $*
 		return $?
 	fi
 

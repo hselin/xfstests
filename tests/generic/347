@@ -36,7 +36,7 @@ _setup_thin()
 	if [ "$FSTYP" == "papyros" ]; then
 		_dmthin_init $BACKING_SIZE $VIRTUAL_SIZE
 		_dmthin_set_queue
-		LD_LIBRARY_PATH=/home/hselin/share/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $DMTHIN_VOL_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR > /dev/null 2>&1
+		LD_LIBRARY_PATH=/home/hselin/share/libfuse/build/lib/:$LD_LIBRARY_PATH _mkfs_papyros $DMTHIN_VOL_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR $SCRATCH_WL_DIR > /dev/null 2>&1
 		_dmthin_mount
 		return $?
 	fi

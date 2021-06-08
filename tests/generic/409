@@ -123,7 +123,7 @@ start_test()
 	if [ "$FSTYP" == "papyros" ]; then
 		_scratch_mkfs >$seqres.full 2>&1
 		mkdir -p $ROOT_PAPYROS_MNT
-		_papyros_mount $SCRATCH_DEV $ROOT_PAPYROS_MNT $SCRATCH_MD_DIR
+		_papyros_mount $SCRATCH_DEV $ROOT_PAPYROS_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR
 		mount --make-slave $ROOT_PAPYROS_MNT
 		_get_mount --bind $ROOT_PAPYROS_MNT $MNTHEAD
 	else

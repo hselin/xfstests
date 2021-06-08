@@ -341,7 +341,7 @@ _try_scratch_mount()
 		_overlay_scratch_mount $*
 		return $?
 	elif [ "$FSTYP" == "papyros" ]; then
-		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $*
+		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $*
 		return $?
 	fi
 	_mount -t $FSTYP `_scratch_mount_options $*`
@@ -378,7 +378,7 @@ _scratch_remount()
     local opts="$1"
 
 	if [ "$FSTYP" == "papyros" ]; then
-		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR -o remount,$opts
+		_papyros_mount $SCRATCH_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR -o remount,$opts
 		return $?
 	fi
 
@@ -428,7 +428,7 @@ _test_mount()
 
     if [ "$FSTYP" == "papyros" ]; then
         #_papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $*
-        _papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $TEST_FS_MOUNT_OPTS
+        _papyros_mount $TEST_DEV $TEST_DIR $TEST_MD_DIR $TEST_WL_DIR $TEST_FS_MOUNT_OPTS
         return $?
     fi
 
@@ -651,7 +651,7 @@ _test_mkfs()
 	$MKFS_PROG -t $FSTYP -- -F $MKFS_OPTIONS $* $TEST_DEV
 	;;
     papyros)
-	_mkfs_papyros $TEST_DEV $TEST_SPARE_DEV $TEST_MD_DIR
+	_mkfs_papyros $TEST_DEV $TEST_SPARE_DEV $TEST_MD_DIR $TEST_WL_DIR
 	;;
     *)
 	yes | $MKFS_PROG -t $FSTYP -- $MKFS_OPTIONS $* $TEST_DEV
@@ -689,6 +689,9 @@ _mkfs_dev()
 	$MKFS_PROG -t $FSTYP -- -f $MKFS_OPTIONS $* \
 		2>$tmp.mkfserr 1>$tmp.mkfsstd
 	;;
+	papyros)
+	_mkfs_papyros $* 2>$tmp.mkfserr 1>$tmp.mkfsstd
+	;;
     *)
 	yes | $MKFS_PROG -t $FSTYP -- $MKFS_OPTIONS $* \
 		2>$tmp.mkfserr 1>$tmp.mkfsstd
@@ -703,6 +706,18 @@ _mkfs_dev()
 	exit 1
     fi
     rm -f $tmp.mkfserr $tmp.mkfsstd
+}
+
+_mount_dev()
+{
+    case "$FSTYP" in
+    papyros)
+                _papyros_mount $*
+                ;;
+    *)
+                $MOUNT_PROG `_mount_ops_filter $*`
+                ;;
+    esac
 }
 
 # remove all files in $SCRATCH_MNT, useful when testing on NFS/CIFS
@@ -741,7 +756,7 @@ _scratch_mkfs()
 		return $?
 		;;
 	papyros)
-		_mkfs_papyros $SCRATCH_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR
+		_mkfs_papyros $SCRATCH_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR $SCRATCH_WL_DIR
 		return $?
 		;;
 	tmpfs)

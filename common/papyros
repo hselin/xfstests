@@ -11,7 +11,9 @@ _papyros_mount()
 	local device=$1
 	local mnt_directory=$2
 	local md_directory=$3
-	local opts=$5
+	local wl_directory=$4
+	local fm_directory=/dev/shm/fm/
+	local opts=$6
 
 	local opt_str="allow_other,clone_fd,exec,nosuid,default_permissions"
 
@@ -60,12 +62,12 @@ _papyros_mount()
 	ulimit -s 16384 > /dev/null 2>&1
 	ulimit -a > /dev/null 2>&1
 
-	$HERACLES_PATH/heracles $md_directory daemon $mnt_directory -f -o $opt_str
+	$HERACLES_PATH/heracles $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str
 
 	#echo $!
 	#read -p "Press enter to continue"
 
-	sleep 5
+	sleep 10
 
 	return 0
 }
@@ -75,10 +77,11 @@ _papyros_remount()
 	local device=$1
 	local mnt_directory=$2
 	local md_directory=$3
+	local wl_directory=$4
 
 	fusermount -u $mnt_directory
 
-	$HERACLES_PATH/heracles $md_directory $mnt_directory -f -o allow_other,clone_fd,exec,nosuid
+	$HERACLES_PATH/heracles $md_directory $wl_directory $mnt_directory -f -o allow_other,clone_fd,exec,nosuid
 }
 
 _papyros_unmount()
@@ -87,7 +90,7 @@ _papyros_unmount()
 
 	sync
 	umount $mnt_directory
-	sleep 5
+	sleep 10
 }
 
 _check_papyros_filesystem()
@@ -100,8 +103,13 @@ _mkfs_papyros()
 	local device=$1
 	local spare_device=$2
 	local md_directory=$3
+	local wl_directory=$4
 
-	rm -rf $md_directory
+	mkdir -p $md_directory
+	rm -f $md_directory/*
+	mkdir -p $wl_directory
+	rm -f $wl_directory/*
+
 	$HERACLES_PATH/mkfs.heracles $md_directory $device,$spare_device 1 1
 }
 
