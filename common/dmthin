@@ -240,7 +240,8 @@ _dmthin_mount_options()
 _dmthin_mount()
 {
     if [ "$FSTYP" == "papyros" ]; then
-		_papyros_mount $DMTHIN_VOL_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR $*
+	        #echo "_papyros_mount $DMTHIN_VOL_DEV,$SCRATCH_SPARE_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR $*"
+		_papyros_mount $DMTHIN_VOL_DEV,$SCRATCH_SPARE_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR $*
 		return $?
 	fi
 
@@ -250,5 +251,6 @@ _dmthin_mount()
 _dmthin_mkfs()
 {
 	_scratch_options mkfs
+	#echo "_mkfs_dev $SCRATCH_OPTIONS $@ $DMTHIN_VOL_DEV"
 	_mkfs_dev $SCRATCH_OPTIONS $@ $DMTHIN_VOL_DEV
 }

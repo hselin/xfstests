@@ -8,7 +8,7 @@ export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 _papyros_mount()
 {
-	local device=$1
+	local devices=$1
 	local mnt_directory=$2
 	local md_directory=$3
 	local wl_directory=$4
@@ -62,9 +62,16 @@ _papyros_mount()
 	ulimit -s 16384 > /dev/null 2>&1
 	ulimit -a > /dev/null 2>&1
 
-	#echo "$HERACLES_PATH/heracles $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str"
-	$HERACLES_PATH/heracles $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str
-
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+	    #echo "sudo docker run --rm -t  --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared --mount type=bind,src=$mnt_directory,dst=/mnt --mount type=bind,src=$fm_directory,dst=/fm-vol --mount type=bind,src=$wl_directory,dst=/wl-vol,bind-propagation=rshared --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -d $devices -p $opt_str -m"
+	    sudo docker run --rm -t -d --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared --mount type=bind,src=$mnt_directory,dst=/mnt,bind-propagation=rshared --mount type=bind,src=$fm_directory,dst=/fm-vol,bind-propagation=rshared --mount type=bind,src=$wl_directory,dst=/wl-vol,bind-propagation=rshared --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -d $devices -p $opt_str -m > /dev/null 2>&1
+	    #	    sleep 10; docker ps
+	    sleep 120;
+	else	    
+	    #echo "$HERACLES_PATH/heracles $devices $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str"
+	    $HERACLES_PATH/heracles $devices $md_directory $wl_directory $fm_directory daemon $mnt_directory -f -o $opt_str
+	fi
+	
 	#echo $!
 	#read -p "Press enter to continue"
 
@@ -75,7 +82,7 @@ _papyros_mount()
 
 _papyros_remount()
 {
-	local device=$1
+	local devices=$1
 	local mnt_directory=$2
 	local md_directory=$3
 	local wl_directory=$4
@@ -83,7 +90,11 @@ _papyros_remount()
 
 	fusermount -u $mnt_directory
 
-	$HERACLES_PATH/heracles $md_directory $wl_directory $mnt_directory $fm_directory -f -o allow_other,clone_fd,exec,nosuid
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+	    sudo docker run --rm -t -d --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared --mount type=bind,src=$wl_directory,dst=/wl-vol,bind-propagation=rshared --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared --mount type=bind,src=$mnt_directory,dst=/mnt --mount type=bind,src=$fm_directory,dst=/fm-vol,bind-propagation=rshared --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -s -n -d $devices -p allow_other,clone_fd,exec,nosuid -m > /dev/null 2>&1
+	else	    
+	    $HERACLES_PATH/heracles $devices $md_directory $wl_directory $mnt_directory $fm_directory -f -o allow_other,clone_fd,exec,nosuid
+	fi	
 }
 
 _papyros_unmount()
@@ -111,7 +122,12 @@ _mkfs_papyros()
 	rm -f $md_directory/*
 	mkdir -p $wl_directory
 	rm -f $wl_directory/*
-	$HERACLES_PATH/mkfs.heracles $md_directory $device,$spare_device 1 1
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+	    #echo "sudo docker run --rm -t --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -d $device,$spare_device -l 1 -a 1  -b"
+	    sudo docker run --rm -t --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --mount type=bind,src=/dev/shm/xfstests_logs,dst=/logs,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -d $device,$spare_device -l 1 -a 1  -b  > /dev/null 2>&1
+	else	    
+	    $HERACLES_PATH/mkfs.heracles $md_directory $device,$spare_device 1 1
+	fi	
 }
 
 _papyros_is_mounted()
@@ -134,5 +150,10 @@ _papyros_replace_device()
 	local from_device_path=$2
 	local to_device_path=$3
 
-	$HERACLES_PATH/replace_device $md_directory $from_device_path $to_device_path > /dev/null 2>&1
+	if [ $HERACLES_IN_CONTAINER -eq 1 ] && [[ $mnt_directory =~ (.*)/phalanx ]]; then mnt_directory=${BASH_REMATCH[1]}; fi
+	if [[ $HERACLES_IN_CONTAINER -eq 1 ]]; then
+	    sudo docker run --rm -t --init  --mount type=bind,src=$md_directory,dst=/md-vol,bind-propagation=rshared  --device /dev/fuse:/dev/fuse --privileged --cap-add=ALL $CONTAINER_IMAGE -n -s -r "$from_device_path $to_device_path" > /dev/null 2>&1
+	else	    
+	    $HERACLES_PATH/replace_device $md_directory $from_device_path $to_device_path > /dev/null 2>&1
+	fi	
 }

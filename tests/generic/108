@@ -47,7 +47,7 @@ vgname=vg_$seq
 rm -f $seqres.full
 
 # _get_scsi_debug_dev returns a scsi debug device with 128M in size by default
-SCSI_DEBUG_DEV=`_get_scsi_debug_dev 512 512 0 300`
+SCSI_DEBUG_DEV=`_get_scsi_debug_dev 512 512 0 5120`
 test -b "$SCSI_DEBUG_DEV" || _notrun "Failed to initialize scsi debug device"
 echo "SCSI debug device $SCSI_DEBUG_DEV" >>$seqres.full
 
@@ -56,16 +56,17 @@ $LVM_PROG pvcreate -f $SCSI_DEBUG_DEV $SCRATCH_DEV >>$seqres.full 2>&1
 $LVM_PROG vgcreate -f $vgname $SCSI_DEBUG_DEV $SCRATCH_DEV >>$seqres.full 2>&1
 # We use yes pipe instead of 'lvcreate --yes' because old version of lvm
 # (like 2.02.95 in RHEL6) don't support --yes option
-yes | $LVM_PROG lvcreate -i 2 -I 4m -L 275m -n $lvname $vgname \
+yes | $LVM_PROG lvcreate -i 2 -I 4m -L 5G -n $lvname $vgname \
 	>>$seqres.full 2>&1
 # wait for lv creation to fully complete
 $UDEV_SETTLE_PROG >>$seqres.full 2>&1
 
 # _mkfs_dev exits the test on failure, this makes sure test lv is created by
 # above vgcreate/lvcreate operations
-_mkfs_dev /dev/mapper/$vgname-$lvname $SCRATCH_SPARE_DEV
+#_mkfs_dev /dev/mapper/$vgname-$lvname $SCRATCH_SPARE_DEV
+_mkfs_dev /dev/mapper/$vgname-$lvname $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR $SCRATCH_WL_DIR
 
-_mount_real_dev /dev/mapper/$vgname-$lvname $SCRATCH_MNT
+_mount_real_dev /dev/mapper/$vgname-$lvname,$SCRATCH_SPARE_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR -o kernelcache,kernelcachewriteback >>$seqres.full 
 
 # create a test file with contiguous blocks which will span across the 2 disks
 $XFS_IO_PROG -f -c "pwrite 0 16M" -c fsync $SCRATCH_MNT/testfile >>$seqres.full

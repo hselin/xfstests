@@ -29,7 +29,7 @@ _dmerror_mount()
 {
 	if [ "$FSTYP" == "papyros" ]; then
 		_papyros_replace_device $SCRATCH_MD_DIR $SCRATCH_DEV $DMERROR_DEV
-		_papyros_mount $DMERROR_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR $*
+		_papyros_mount $DMERROR_DEV,$SCRATCH_SPARE_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR $*
 		return $?
 	fi
 

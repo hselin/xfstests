@@ -12,6 +12,7 @@ fi
 export PATH=$PATH:/usr/local/bin
 
 export MD_VOL=/dev/shm/xfstests
+export MD_LOG=/dev/shm/xfstests_logs
 export WL_VOL=/dev/shm/xfstests/wl
 export FM_VOL=/dev/shm/xfstests/fm
 
@@ -34,7 +35,7 @@ if [[ -z ${SCRATCH_SPARE_DEV} ]]; then export SCRATCH_SPARE_DEV=/dev/loop103; fi
 export SCRATCH_MNT=/mnt/xfstests/scratch_dir
 export SCRATCH_MD_DIR=$MD_VOL$SCRATCH_DEV
 export SCRATCH_WL_DIR=$WL_VOL$SCRATCH_DEV
-export SCRATCH_FM_DIR=$FM_DIR$SCRATCH_DEV
+export SCRATCH_FM_DIR=$FM_VOL$SCRATCH_DEV
 
 export PAPYROS_TEMP_MNT=/mnt/tmp
 
@@ -48,11 +49,31 @@ export RECREATE_TEST_DEV=true
 
 export LIB_FUSE_PATH=$BASE_PATH/libfuse/build/lib/
 
+if [[ -v HERACLES_IN_CONTAINER ]]; then
+    if [ $HERACLES_IN_CONTAINER -eq 1 ]; then
+	echo "Testing heracles as container"
+	if [[ ! -v DOCKER_IMAGE_TAG ]]; then
+	    echo "HERACLES_IN_CONTAINER is 1 but DOCKER_IMAGE_TAG undefined"
+	    exit 1
+	fi
+	if [[ ! -v DOCKER_DEPOT ]]; then
+	    echo "HERACLES_IN_CONTAINER is 1 but DOCKER_DEPOT undefined"
+	    exit 1
+	fi
+	export CONTAINER_IMAGE=$DOCKER_DEPOT:$DOCKER_IMAGE_TAG
+    else
+	export HERACLES_IN_CONTAINER=0
+    fi
+else
+    export HERACLES_IN_CONTAINER=0
+fi
+
 umount $TEST_DIR
 umount $SCRATCH_MNT
 umount $PAPYROS_TEMP_MNT
 
-mkdir -p $TEST_DIR $SCRATCH_MNT $MD_VOL$TEST_DEV $MD_VOL$SCRATCH_DEV $PAPYROS_TEMP_MNT
+#echo "mkdir -p $TEST_DIR $SCRATCH_MNT $MD_LOG $MD_VOL$TEST_DEV $MD_VOL$SCRATCH_DEV $PAPYROS_TEMP_MNT $SCRATCH_FM_DIR $TEST_FM_DIR"
+mkdir -p $TEST_DIR $SCRATCH_MNT $MD_LOG $MD_VOL$TEST_DEV $MD_VOL$SCRATCH_DEV $PAPYROS_TEMP_MNT $SCRATCH_FM_DIR $TEST_FM_DIR
 
 source ./common/papyros
 

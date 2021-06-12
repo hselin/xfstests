@@ -43,7 +43,7 @@ _setup_thin()
 
 	_dmthin_init $BACKING_SIZE $VIRTUAL_SIZE
 	_dmthin_set_queue
-	_dmthin_mkfs
+	_dmthin_mkfs 
 	_dmthin_mount
 }
 
@@ -76,7 +76,7 @@ _setup_thin
 _workout
 _dmthin_check_fs
 _dmthin_cleanup
-
+echo "device-mapper: remove ioctl on thin-vol  failed: No such device or address Command failed. in 347.full -> to be fixed"
 echo "=== completed"
 
 status=0
