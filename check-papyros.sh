@@ -68,6 +68,13 @@ else
     export HERACLES_IN_CONTAINER=0
 fi
 
+if [[ -v LICENSE_FILE ]]; then
+   export HERACLES_LICENSE_FILE=$LICENSE_FILE
+else
+   echo "missing LICENSE_FILE"
+   exit 1
+fi
+
 umount $TEST_DIR
 umount $SCRATCH_MNT
 umount $PAPYROS_TEMP_MNT
