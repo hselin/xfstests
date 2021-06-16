@@ -69,10 +69,9 @@ else
 fi
 
 if [[ -v LICENSE_FILE ]]; then
-   export HERACLES_LICENSE_FILE=$LICENSE_FILE
+    export HERACLES_LICENSE_OPT="--mount type=bind,src=/etc/machine-id,dst=/etc/machine-id,bind-propagation=rslave --mount type=bind,src=$LICENSE_FILE,dst=/license,bind-propagation=rslave"
 else
-   echo "missing LICENSE_FILE"
-   exit 1
+    export HERACLES_LICENSE_OPT=""
 fi
 
 umount $TEST_DIR

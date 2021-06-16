@@ -76,7 +76,7 @@ _setup_thin
 _workout
 _dmthin_check_fs
 _dmthin_cleanup
-echo "device-mapper: remove ioctl on thin-vol  failed: No such device or address Command failed. in 347.full -> to be fixed"
+#echo "device-mapper: remove ioctl on thin-vol  failed: No such device or address Command failed. in 347.full -> to be fixed"
 echo "=== completed"
 
 status=0
