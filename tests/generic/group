@@ -614,4 +614,29 @@
 609 auto quick rw
 610 auto quick prealloc zero
 611 auto quick attr
+612 auto quick clone
+613 auto quick encrypt
+614 auto quick rw
+615 auto rw
+616 auto rw io_uring stress
+617 auto rw io_uring stress
+618 auto quick attr
+619 auto rw enospc
 620 auto mount quick
+621 auto quick encrypt
+622 auto shutdown metadata atime
+623 auto quick shutdown
+624 auto quick verity
+625 auto quick verity
+626 auto quick rename enospc
+627 auto aio rw stress
+628 auto quick rw clone
+629 auto quick rw copy_range
+630 auto quick rw dedupe clone
+632 auto quick mount
+633 auto quick atime attr cap idmapped io_uring mount perms rw unlink
+634 auto quick atime bigtime
+635 auto quick atime bigtime shutdown
+636 auto quick swap
+637 auto quick dir
+638 auto quick rw
