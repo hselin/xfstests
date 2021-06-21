@@ -51,8 +51,9 @@ sectors=$((2*1024*1024*1024*17))
 chunk_size=128
 
 _dmhugedisk_init $sectors $chunk_size
-_mkfs_dev $DMHUGEDISK_DEV
-_mount $DMHUGEDISK_DEV $SCRATCH_MNT || _fail "mount failed for $DMHUGEDISK_DEV $SCRATCH_MNT"
+_mkfs_dev $DMHUGEDISK_DEV $SCRATCH_SPARE_DEV $SCRATCH_MD_DIR $SCRATCH_WL_DIR
+#_mount $DMHUGEDISK_DEV $SCRATCH_MNT || _fail "mount failed for $DMHUGEDISK_DEV $SCRATCH_MNT"
+_papyros_mount $DMHUGEDISK_DEV,$SCRATCH_SPARE_DEV $SCRATCH_MNT $SCRATCH_MD_DIR $SCRATCH_WL_DIR $SCRATCH_FM_DIR
 testfile=$SCRATCH_MNT/testfile-$seq
 
 $XFS_IO_PROG -fc "pwrite -S 0xaa 0 1m" -c "fsync" $testfile | _filter_xfs_io
