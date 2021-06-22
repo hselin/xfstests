@@ -31,7 +31,7 @@ _require_scratch
 rm -f $seqres.full
 
 _scratch_mkfs >>$seqres.full 2>&1
-_scratch_mount
+_scratch_mount -o kernelcache
 
 $XFS_IO_PROG -f -c "truncate 64K"      \
 	     -c "mmap -w 0 64K"        \
